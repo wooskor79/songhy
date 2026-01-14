@@ -1,7 +1,10 @@
+/* wooskor79/songhy/songhy-bc0c7a97d1c10237fae2511fabe8ebbfa5652211/script.js */
+
 let audio = new Audio();
 let playlist = [];
 let cur = 0;
 let isStarted = false;
+let scrollTimer = null; // 스크롤 멈춤 감지용 타이머
 
 $(document).ready(function() {
     const savedTheme = localStorage.getItem('theme') || 'dark-mode';
@@ -19,6 +22,20 @@ $(document).ready(function() {
 
     $(document).one('click', function() {
         if(!isStarted) { playBgm(); isStarted = true; }
+    });
+
+    // --- 스크롤 감지 로직 추가 ---
+    $(window).on('scroll', function() {
+        // 스크롤이 시작되면 클래스 추가
+        $('#main-content').addClass('is-scrolling');
+
+        // 이전 타이머 클리어
+        clearTimeout(scrollTimer);
+
+        // 200ms 동안 스크롤이 없으면 멈춘 것으로 간주하고 클래스 제거
+        scrollTimer = setTimeout(function() {
+            $('#main-content').removeClass('is-scrolling');
+        }, 200);
     });
 });
 
@@ -107,7 +124,7 @@ function closeModal() {
 
     $('#modal').fadeOut(200, function() {
         $('body').css('overflow', 'auto');
-        playBgm(); // 비디오 종료 후 BGM 재개
+        playBgm(); 
     });
 }
 
@@ -172,5 +189,3 @@ function showMsgModal(text) {
         setTimeout(() => $('#msg-modal').css('display', 'none'), 500); 
     }, 5000);
 }
-
-/* 스크롤 시 배경을 가리는 로직(is-scrolling 클래스 추가)을 완전히 제거했습니다. */
