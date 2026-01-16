@@ -6,17 +6,17 @@ $isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] === true;
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>아이묭 사진 갤러리 | 고화질 사진 다운로드</title>
-    <meta name="description" content="아이묭의 고화질 사진 및 영상을 감상할 수 있는 비공식 개인 팬 갤러리 사이트입니다.">
+    <title>송하영 사진 갤러리 | 고화질 사진 다운로드</title>
+    <meta name="description" content="송하영의 고화질 사진 및 영상을 감상할 수 있는 비공식 개인 팬 갤러리 사이트입니다.">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="canonical" href="https://aim.wooskor.com/">
+    <link rel="canonical" href="https://song.wooskor.com/">
     <link rel="stylesheet" href="style.css?v=<?=filemtime('style.css')?>">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body class="dark-mode">
 
 <div id="sidebar">
-    <h1>Aimyon Gallery</h1>
+    <h1>SongHaYoung Gallery</h1>
     
     <div class="switch-wrap">
         <span style="font-size:13px;font-weight:bold;color:var(--text-color);">다크 모드</span>

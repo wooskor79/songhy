@@ -1,6 +1,5 @@
 <?php
 session_start();
-// 설정 파일 불러오기
 $config = include 'config.php';
 
 // 변수 매핑
@@ -9,18 +8,13 @@ $videoDirs = $config['video_dirs'];
 $tempDir   = $config['temp_dir'];
 $pwFile    = $config['pw_file'];
 $bgmDir    = $config['bgm_dir'];
+// [추가] 캐시 디렉토리
+$videoCacheDir = $config['video_cache']; 
 
 $action  = $_REQUEST['action'] ?? '';
 $isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] === true;
 
-// 파일 위치 찾는 헬퍼 함수
-function findFileInDirs($filename, $dirs) {
-    foreach ($dirs as $dir) {
-        $path = $dir . $filename;
-        if (file_exists($path)) return $path;
-    }
-    return null;
-}
+// ... (로그인, 로그아웃, BGM 등 기존 코드 유지) ...
 
 // 1. 로그인
 if ($action === 'login') {
@@ -50,7 +44,7 @@ if ($action === 'get_bgm') {
     exit;
 }
 
-// 4. [관리자] 선택 삭제
+// 4. 삭제
 if ($action === 'delete_temp' && $isAdmin) {
     $files = $_POST['files'] ?? [];
     foreach($files as $f) {
@@ -60,19 +54,15 @@ if ($action === 'delete_temp' && $isAdmin) {
     echo "ok"; exit;
 }
 
-// 5. [관리자] 갤러리로 이동 (첫 번째 사진 폴더로 이동됨)
+// 5. 갤러리 이동
 if ($action === 'move_to_gallery' && $isAdmin) {
-    // 이동할 기본 폴더는 설정의 첫 번째 폴더로 지정
     $targetDir = $photoDirs[0]; 
-
     $files = $_POST['files'] ?? [];
     foreach($files as $f) {
         $oldPath = $tempDir . basename($f);
         if(!file_exists($oldPath)) continue;
-
         $filename = pathinfo($f, PATHINFO_FILENAME);
         $ext = pathinfo($f, PATHINFO_EXTENSION);
-        
         $newFileName = $f;
         $counter = 0;
         while(file_exists($targetDir . $newFileName)) {
@@ -84,12 +74,10 @@ if ($action === 'move_to_gallery' && $isAdmin) {
     echo "ok"; exit;
 }
 
-// 6. 파일 업로드
+// 6. 업로드
 if ($action === 'upload') {
     if (!file_exists($tempDir)) {
-        if (!@mkdir($tempDir, 0777, true)) {
-            echo "폴더 생성 실패"; exit;
-        }
+        if (!@mkdir($tempDir, 0777, true)) { echo "폴더 생성 실패"; exit; }
     }
     if (isset($_FILES['files']['name'])) {
         foreach($_FILES['files']['tmp_name'] as $k => $tmp) {
@@ -100,16 +88,22 @@ if ($action === 'upload') {
     echo "ok"; exit;
 }
 
-// 7. 다운로드 (여러 폴더 검색 지원)
+// 7. 다운로드 (헬퍼 함수 포함)
+function findFileInDirs($filename, $dirs) {
+    foreach ($dirs as $dir) {
+        $path = $dir . $filename;
+        if (file_exists($path)) return $path;
+    }
+    return null;
+}
+
 if ($action === 'download') {
     $files = $_POST['files'] ?? [];
     if (count($files) === 0) exit;
 
     if (count($files) === 1) {
         $fname = basename($files[0]);
-        // 사진 폴더들과 영상 폴더들을 모두 뒤짐
         $path = findFileInDirs($fname, $photoDirs) ?? findFileInDirs($fname, $videoDirs);
-        
         if ($path && file_exists($path)) {
             header('Content-Type: application/octet-stream');
             header('Content-Disposition: attachment; filename="'.$fname.'"');
@@ -140,11 +134,12 @@ if ($action === 'download') {
     }
 }
 
-// 8. 썸네일 저장
+// 8. 썸네일 저장 (브라우저 생성 분)
 if ($action === 'save_thumb') {
     $file = $_POST['file'] ?? '';
     $data = $_POST['image'] ?? '';
-    $videoCacheDir = "/volume1/etc/cache/videos/";
+    
+    // config에서 가져온 경로 사용
     if (!file_exists($videoCacheDir)) @mkdir($videoCacheDir, 0777, true);
 
     if ($file && $data) {
