@@ -1,24 +1,20 @@
-/* wooskor79/songhy/songhy-bc0c7a97d1c10237fae2511fabe8ebbfa5652211/style.css */
-
 :root {
     --bg-color: #0f172a;
     --sidebar-bg: #1e293b;
-    --card-bg: rgba(51, 65, 85, 0.85); 
+    --card-bg: #334155;
     --text-color: #f1f5f9;
     --accent-blue: #38bdf8;
     --border-color: #475569;
     --sidebar-width: 280px;
 }
-
 body.light-mode {
     --bg-color: #f8fafc;
     --sidebar-bg: #ffffff;
-    --card-bg: rgba(255, 255, 255, 0.85);
+    --card-bg: #ffffff;
     --text-color: #1e293b;
     --accent-blue: #0284c7;
     --border-color: #e2e8f0;
 }
-
 body { 
     margin: 0; display: flex; font-family: 'Pretendard', sans-serif; 
     background-color: var(--bg-color);
@@ -28,8 +24,7 @@ body {
     background-attachment: fixed;      
     background-size: cover;            
     color: var(--text-color); 
-    transition: background 0.3s; 
-    overflow-x: hidden;
+    transition: background 0.3s; overflow-x: hidden;
 }
 
 #sidebar { 
@@ -37,7 +32,6 @@ body {
     background: var(--sidebar-bg); border-right: 1px solid var(--border-color); padding: 30px 20px; box-sizing: border-box;
     z-index: 100;
 }
-
 #sidebar h1 { color: var(--accent-blue); text-align: center; font-size: 24px; margin-bottom: 25px; }
 
 .css-btn {
@@ -47,6 +41,9 @@ body {
 }
 .css-btn-gray { background: #64748b; color: white; }
 .css-btn:hover { opacity: 0.9; }
+
+.toolbar { display: flex; justify-content: flex-start; gap: 10px; margin: 10px 0 15px; padding-right: 5px; }
+.toolbar .css-btn { width: auto; display: inline-block; padding: 8px 16px; margin-bottom: 0; font-size: 13px; }
 
 .switch-wrap { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
 .switch { position: relative; display: inline-block; width: 46px; height: 22px; }
@@ -74,20 +71,11 @@ input:checked + .slider:before { transform: translateX(24px); }
     background: var(--bg-color); color: var(--text-color); text-align: center; margin-bottom: 10px; box-sizing: border-box;
 }
 
-/* 메인 콘텐츠 영역: 효과 적용을 위한 기본 transition 설정 */
 #main-content { 
-    margin-left: var(--sidebar-width); 
-    padding: 40px; 
-    width: calc(100% - var(--sidebar-width)); 
-    transition: opacity 0.5s ease, filter 0.5s ease; /* 투명도와 블러 효과 애니메이션 */
+    margin-left: var(--sidebar-width); padding: 40px; width: calc(100% - var(--sidebar-width)); 
+    transition: opacity 0.4s ease, filter 0.4s ease; 
 }
-
-/* 스크롤 시 적용될 스타일 (흐려짐 및 투명도 조절) */
-#main-content.is-scrolling {
-    opacity: 0.3;          /* 투명하게 만들어 배경 노출 */
-    filter: blur(8px);     /* 사진들을 흐릿하게 처리 */
-    pointer-events: none;  /* 스크롤 중 클릭 방지 (선택 사항) */
-}
+#main-content.is-scrolling { opacity: 0.15; filter: blur(4px); pointer-events: none; }
 
 .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
 .photo-card { position: relative; aspect-ratio: 1/1; border-radius: 12px; overflow: hidden; background: var(--card-bg); border: 1px solid var(--border-color); }
@@ -106,34 +94,66 @@ input:checked + .slider:before { transform: translateX(24px); }
     background: rgba(0,0,0,0.95); z-index: 10000; justify-content: center; align-items: center;
 }
 #modal-img { max-width: 95%; max-height: 95%; object-fit: contain; }
-#modal-video { max-width: 90%; max-height: 90%; }
 
 .msg-modal {
-    display: none;
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 20000;
-    justify-content: center; align-items: center;
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6); z-index: 20000; justify-content: center; align-items: center;
     opacity: 0; transition: opacity 0.5s ease;
 }
-
-.msg-modal.show {
-    display: flex;
-    opacity: 1;
-}
-
+.msg-modal.show { display: flex; opacity: 1; }
 .msg-content {
-    background: var(--card-bg);
-    padding: 30px 50px;
-    border-radius: 15px;
-    border: 1px solid var(--accent-blue);
-    text-align: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    background: var(--card-bg); padding: 30px 50px; border-radius: 15px; border: 1px solid var(--accent-blue);
+    text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); transform: translateY(20px); transition: transform 0.5s ease;
 }
+.msg-modal.show .msg-content { transform: translateY(0); }
+#msg-text { color: var(--text-color); font-size: 20px; font-weight: bold; margin: 0; }
 
-#msg-text {
-    color: var(--text-color);
-    font-size: 20px;
-    font-weight: bold;
-    margin: 0;
+/* [업로드 페이지 스타일 - 화면 전체 너비] */
+.upload-wrapper { display: block; width: 100%; }
+.upload-title { text-align: left; margin-bottom: 20px; color: var(--accent-blue); font-size: 24px; font-weight: bold; padding-left: 5px; }
+
+#drop-zone {
+    width: 100%; height: 200px; border: 2px dashed #475569; border-radius: 12px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    cursor: pointer; transition: 0.3s; background: rgba(30, 41, 59, 0.6); margin-bottom: 30px; box-sizing: border-box;
 }
+#drop-zone:hover, #drop-zone.dragover { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.1); transform: scale(1.005); }
+#drop-zone .icon { font-size: 48px; margin-bottom: 15px; opacity: 0.8; }
+#drop-zone .main-text { margin: 5px 0; font-size: 16px; color: #e2e8f0; font-weight: 500; }
+#drop-zone .sub-text { font-size: 13px; color: #64748b; margin-top: 5px; }
+
+#preview-area { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; margin-bottom: 25px; }
+.preview-item { position: relative; aspect-ratio: 1/1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: #000; }
+.preview-item img { width: 100%; height: 100%; object-fit: cover; }
+.preview-remove {
+    position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white;
+    border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer;
+    font-size: 14px; display: flex; align-items: center; justify-content: center;
+}
+.preview-remove:hover { background: #ef4444; }
+
+#up-btn {
+    background: #10b981; color: white; width: 100%; padding: 16px; font-size: 16px; 
+    border-radius: 8px; margin-top: 10px; border: none; font-weight: bold; transition: 0.2s; cursor: pointer;
+}
+#up-btn:hover { background: #059669; }
+#up-btn.disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+/* [하단 대기열 스타일] */
+.staging-area { margin-top: 50px; border-top: 1px solid var(--border-color); padding-top: 30px; text-align: left; }
+.staging-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.staging-toolbar .left-tools { display: flex; gap: 10px; width: 100%; }
+
+/* [모달 스타일] */
+.custom-modal {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7); z-index: 30000; justify-content: center; align-items: center;
+}
+.modal-content {
+    background: var(--card-bg); padding: 30px; border-radius: 12px; width: 90%; max-width: 400px;
+    text-align: center; border: 1px solid var(--accent-blue); box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+.modal-content h3 { margin-top: 0; color: var(--accent-blue); margin-bottom: 15px; }
+.modal-content p { margin: 20px 0; font-size: 16px; color: var(--text-color); line-height: 1.5; }
+.modal-btns { display: flex; gap: 10px; justify-content: center; margin-top: 25px; }
+.modal-btns button { width: 100px; padding: 10px; }

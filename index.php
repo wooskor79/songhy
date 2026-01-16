@@ -6,8 +6,8 @@ $isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] === true;
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>SongHaYoung Gallery | 고화질 사진 다운로드</title>
-    <meta name="description" content="송하영의 고화질 사진 및 영상을 감상할 수 있는 비공식 개인 팬 갤러리 사이트입니다.">
+    <title>아이묭 사진 갤러리 | 고화질 사진 다운로드</title>
+    <meta name="description" content="아이묭의 고화질 사진 및 영상을 감상할 수 있는 비공식 개인 팬 갤러리 사이트입니다.">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="canonical" href="https://aim.wooskor.com/">
     <link rel="stylesheet" href="style.css?v=<?=filemtime('style.css')?>">
@@ -16,7 +16,7 @@ $isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] === true;
 <body class="dark-mode">
 
 <div id="sidebar">
-    <h1>SongHaYoung Gallery</h1>
+    <h1>Aimyon Gallery</h1>
     
     <div class="switch-wrap">
         <span style="font-size:13px;font-weight:bold;color:var(--text-color);">다크 모드</span>
@@ -49,7 +49,8 @@ $isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] === true;
     
     <div class="menu-list">
         <button class="css-btn" onclick="loadPage(1, 'gallery')">갤러리 보기</button>
-        <button class="css-btn css-btn-gray" onclick="loadPage(1, 'upload')">사진 업로드</button>
+        <button class="css-btn" style="background: #8b5cf6; color: #fff;" onclick="loadPage(1, 'video')">영상 보기</button>
+        <button class="css-btn" style="background: #10b981; color: #fff; margin-top: 10px;" onclick="loadPage(1, 'upload')">사진 업로드</button>
     </div>
 </div>
 
@@ -58,7 +59,8 @@ $isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] === true;
 </div>
 
 <div id="modal" onclick="closeModal()">
-    <img id="modal-img" alt="송하영 사진 크게 보기" style="display:none;">
+    <img id="modal-img" alt="크게 보기" style="display:none;">
+    <video id="modal-video" controls style="display:none; max-width:95%; max-height:95%;" onclick="event.stopPropagation()"></video>
 </div>
 
 <div id="msg-modal" class="msg-modal">

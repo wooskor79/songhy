@@ -1,14 +1,26 @@
 <?php
 session_start();
-// 경로 설정: volume1 확인 및 마지막 슬래시 포함
-$photoDir = "/volume1/ShareFolder/Song-hayoung/사진/"; 
-$videoDir = "/volume/ShareFolder/Song-hayoung/영상/"; // 경로 수정
-$tempDir = "/volume1/etc/aim/photo/";
-$pwFile = "/volume1/etc/aim/password.txt";
-$bgmDir = "./bgm/";
+// 설정 파일 불러오기
+$config = include 'config.php';
 
-$action = $_REQUEST['action'] ?? '';
+// 변수 매핑
+$photoDirs = $config['photo_dirs'];
+$videoDirs = $config['video_dirs'];
+$tempDir   = $config['temp_dir'];
+$pwFile    = $config['pw_file'];
+$bgmDir    = $config['bgm_dir'];
+
+$action  = $_REQUEST['action'] ?? '';
 $isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] === true;
+
+// 파일 위치 찾는 헬퍼 함수
+function findFileInDirs($filename, $dirs) {
+    foreach ($dirs as $dir) {
+        $path = $dir . $filename;
+        if (file_exists($path)) return $path;
+    }
+    return null;
+}
 
 // 1. 로그인
 if ($action === 'login') {
@@ -38,52 +50,109 @@ if ($action === 'get_bgm') {
     exit;
 }
 
-// 4. 업로드 (업로드 버튼 반응 관련)
+// 4. [관리자] 선택 삭제
+if ($action === 'delete_temp' && $isAdmin) {
+    $files = $_POST['files'] ?? [];
+    foreach($files as $f) {
+        $target = $tempDir . basename($f);
+        if(file_exists($target)) unlink($target);
+    }
+    echo "ok"; exit;
+}
+
+// 5. [관리자] 갤러리로 이동 (첫 번째 사진 폴더로 이동됨)
+if ($action === 'move_to_gallery' && $isAdmin) {
+    // 이동할 기본 폴더는 설정의 첫 번째 폴더로 지정
+    $targetDir = $photoDirs[0]; 
+
+    $files = $_POST['files'] ?? [];
+    foreach($files as $f) {
+        $oldPath = $tempDir . basename($f);
+        if(!file_exists($oldPath)) continue;
+
+        $filename = pathinfo($f, PATHINFO_FILENAME);
+        $ext = pathinfo($f, PATHINFO_EXTENSION);
+        
+        $newFileName = $f;
+        $counter = 0;
+        while(file_exists($targetDir . $newFileName)) {
+            $newFileName = $filename . "_" . $counter . "." . $ext;
+            $counter++;
+        }
+        rename($oldPath, $targetDir . $newFileName);
+    }
+    echo "ok"; exit;
+}
+
+// 6. 파일 업로드
 if ($action === 'upload') {
-    if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
-    foreach($_FILES['files']['tmp_name'] as $k => $tmp) {
-        if (is_uploaded_file($tmp)) {
-            move_uploaded_file($tmp, $tempDir . basename($_FILES['files']['name'][$k]));
+    if (!file_exists($tempDir)) {
+        if (!@mkdir($tempDir, 0777, true)) {
+            echo "폴더 생성 실패"; exit;
+        }
+    }
+    if (isset($_FILES['files']['name'])) {
+        foreach($_FILES['files']['tmp_name'] as $k => $tmp) {
+            $name = basename($_FILES['files']['name'][$k]);
+            move_uploaded_file($tmp, $tempDir . $name);
         }
     }
     echo "ok"; exit;
 }
 
-// 5. 다운로드
+// 7. 다운로드 (여러 폴더 검색 지원)
 if ($action === 'download') {
     $files = $_POST['files'] ?? [];
     if (count($files) === 0) exit;
 
     if (count($files) === 1) {
-        $filePath = $photoDir . basename($files[0]);
-        if (file_exists($filePath)) {
-            if (ob_get_level()) ob_end_clean();
+        $fname = basename($files[0]);
+        // 사진 폴더들과 영상 폴더들을 모두 뒤짐
+        $path = findFileInDirs($fname, $photoDirs) ?? findFileInDirs($fname, $videoDirs);
+        
+        if ($path && file_exists($path)) {
             header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . basename($filePath) . '"');
-            header('Content-Length: ' . filesize($filePath));
-            readfile($filePath);
+            header('Content-Disposition: attachment; filename="'.$fname.'"');
+            header('Content-Length: '.filesize($path));
+            readfile($path);
             exit;
         }
     } else {
+        $zipName = "download_" . date("Ymd_His") . ".zip";
+        $zipPath = $tempDir . $zipName;
         $zip = new ZipArchive();
-        $zipFileName = "SongHaYoung_Photos_" . date("Ymd_His") . ".zip";
-        $zipFilePath = $tempDir . $zipFileName;
-        if ($zip->open($zipFilePath, ZipArchive::CREATE) === TRUE) {
+        if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
             foreach ($files as $f) {
-                $filePath = $photoDir . basename($f);
-                if (file_exists($filePath)) $zip->addFile($filePath, basename($f));
+                $fname = basename($f);
+                $path = findFileInDirs($fname, $photoDirs) ?? findFileInDirs($fname, $videoDirs);
+                if ($path && file_exists($path)) $zip->addFile($path, $fname);
             }
             $zip->close();
-            if (file_exists($zipFilePath)) {
-                if (ob_get_level()) ob_end_clean();
+            if (file_exists($zipPath)) {
                 header('Content-Type: application/zip');
-                header('Content-Disposition: attachment; filename="' . $zipFileName . '"');
-                header('Content-Length: ' . filesize($zipFilePath));
-                readfile($zipFilePath);
-                unlink($zipFilePath);
+                header('Content-Disposition: attachment; filename="'.$zipName.'"');
+                header('Content-Length: '.filesize($zipPath));
+                readfile($zipPath);
+                unlink($zipPath);
                 exit;
             }
         }
     }
+}
+
+// 8. 썸네일 저장
+if ($action === 'save_thumb') {
+    $file = $_POST['file'] ?? '';
+    $data = $_POST['image'] ?? '';
+    $videoCacheDir = "/volume1/etc/cache/videos/";
+    if (!file_exists($videoCacheDir)) @mkdir($videoCacheDir, 0777, true);
+
+    if ($file && $data) {
+        $data = str_replace('data:image/jpeg;base64,', '', $data);
+        $data = str_replace(' ', '+', $data);
+        file_put_contents($videoCacheDir . basename($file) . ".jpg", base64_decode($data));
+        echo "saved";
+    }
+    exit;
 }
 ?>
