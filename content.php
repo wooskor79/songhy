@@ -131,7 +131,25 @@ if ($view === 'gallery' || $view === 'video') {
 function drawPager($p, $ts, $v) {
     if($ts <= 1) return;
     echo "<div class='pager'>";
-    // ... 페이징 로직 (생략, 기존과 동일) ...
+    
+    $start = max(1, $p - 5);
+    $end = min($ts, $p + 5);
+
+    if ($p > 1) {
+        echo "<a href='javascript:void(0)' onclick=\"loadPage(1, '$v')\">&lt;&lt;</a>";
+        echo "<a href='javascript:void(0)' onclick=\"loadPage(" . ($p - 1) . ", '$v')\">&lt;</a>";
+    }
+
+    for ($i = $start; $i <= $end; $i++) {
+        $cls = ($i == $p) ? " class='active'" : "";
+        echo "<a href='javascript:void(0)'$cls onclick=\"loadPage($i, '$v')\">$i</a>";
+    }
+
+    if ($p < $ts) {
+        echo "<a href='javascript:void(0)' onclick=\"loadPage(" . ($p + 1) . ", '$v')\">&gt;</a>";
+        echo "<a href='javascript:void(0)' onclick=\"loadPage($ts, '$v')\">&gt;&gt;</a>";
+    }
+    
     echo "</div>";
 }
 ?>
